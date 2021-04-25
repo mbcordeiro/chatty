@@ -14,7 +14,7 @@ class Setting {
   id: string;
 
   @Column()
-  name: string;
+  username: string;
 
   @Column()
   chat: boolean;
