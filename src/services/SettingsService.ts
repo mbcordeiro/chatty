@@ -7,7 +7,7 @@ interface ISettingsCreate {
   username: string;
 }
 
-class SettingsServices {
+class SettingsService {
   private settingsRepository: Repository<Setting>;
 
   constructor() {
@@ -30,6 +30,11 @@ class SettingsServices {
 
     return settings;
   }
+
+  async findByUsername(username: string) {
+    const settings = await this.settingsRepository.findOne({ username });
+    return settings;
+  }
 }
 
-export { SettingsServices };
+export { SettingsService };
