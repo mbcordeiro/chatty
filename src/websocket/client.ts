@@ -2,14 +2,22 @@ import { Socket } from 'socket.io';
 import { io } from '../http';
 import { ConnectionsService } from '../services/ConnectionsService';
 import { UsersService } from '../services/UsersService';
+import { MessagesService } from '../services/MessagesService';
 
-const connectionsService = new ConnectionsService();
-const usersService = new UsersService();
+interface IParams {
+  text: string;
+  email: string;
+}
 
 io.on('connection', (socket: Socket) => {
+  const connectionsService = new ConnectionsService();
+  const usersService = new UsersService();
+  const messagesService = new MessagesService();
+
   socket.on('client_first_access', async params => {
     const socket_id = socket.id;
-    const { text, email } = params;
+    const { text, email } = params as IParams;
+    let user_id = null;
 
     const userExists = await usersService.findByEmail(email);
 
@@ -34,5 +42,10 @@ io.on('connection', (socket: Socket) => {
         await connectionsService.create(connection);
       }
     }
+
+    await messagesService.create({
+      text,
+      user_id,
+    });
   });
 });
