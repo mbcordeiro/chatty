@@ -5,13 +5,16 @@ class SettingsController {
   async create(request: Request, response: Response) {
     const { chat, username } = request.body;
 
-    const settingsServices = new SettingsService();
+    const settingsService = new SettingsService();
 
     try {
-      const settings = await settingsServices.create({ chat, username });
+      const settings = await settingsService.create({ chat, username });
+
       return response.json(settings);
-    } catch (error) {
-      return response.status(400).json({ message: error.message });
+    } catch (err) {
+      return response.status(400).json({
+        message: err.message,
+      });
     }
   }
 

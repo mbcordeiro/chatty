@@ -1,4 +1,3 @@
-import { Socket } from 'socket.io';
 import { io } from '../http';
 import { ConnectionsService } from '../services/ConnectionsService';
 import { UsersService } from '../services/UsersService';
@@ -9,7 +8,7 @@ interface IParams {
   email: string;
 }
 
-io.on('connection', (socket: Socket) => {
+io.on('connect', socket => {
   const connectionsService = new ConnectionsService();
   const usersService = new UsersService();
   const messagesService = new MessagesService();
@@ -28,7 +27,11 @@ io.on('connection', (socket: Socket) => {
         socket_id,
         user_id: user.id,
       });
+
+      user_id = user.id;
     } else {
+      user_id = userExists.id;
+
       const connection = await connectionsService.findByUserId(userExists.id);
 
       if (!connection) {
@@ -49,6 +52,33 @@ io.on('connection', (socket: Socket) => {
     });
 
     const allMessages = await messagesService.listByUser(user_id);
-    socket.emit("client_list_all_messages", allMessages);
+
+    socket.emit('client_list_all_messages', allMessages);
+
+    const allUsers = await connectionsService.findAllWithoutAdmin();
+    io.emit('admin_list_all_users', allUsers);
+  });
+
+  socket.on('client_send_to_admin', async params => {
+    const { text, socket_admin_id } = params;
+
+    const socket_id = socket.id;
+
+    const { user_id } = await connectionsService.findBySocketID(socket_id);
+
+    const message = await messagesService.create({
+      text,
+      user_id,
+    });
+
+    io.to(socket_admin_id).emit('admin_receive_message', {
+      message,
+      socket_id,
+    });
+  });
+
+  socket.on('disconnect', async () => {
+    console.log(socket.id);
+    await connectionsService.deleteBySocketId(socket.id);
   });
 });

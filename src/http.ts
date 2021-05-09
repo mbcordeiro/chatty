@@ -3,9 +3,8 @@ import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import path from 'path';
 
-import { routes } from './routes';
-
 import './database';
+import { routes } from './routes';
 
 const app = express();
 
@@ -22,12 +21,11 @@ app.get('/pages/admin', (request, response) => {
   return response.render('html/admin.html');
 });
 
-const http = createServer(app);
-
-const io = new Server(http);
+const http = createServer(app); 
+const io = new Server(http); 
 
 io.on('connection', (socket: Socket) => {
-  console.log('Connected => ', socket.id);
+  // console.log("Se conectou", socket.id);
 });
 
 app.use(express.json());
